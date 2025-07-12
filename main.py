@@ -5,6 +5,9 @@ from bs4 import BeautifulSoup
 from discord.ext import tasks, commands
 import requests
 import discord
+from dotenv import load_dotenv
+load_dotenv()
+from os import getenv
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -70,7 +73,7 @@ async def scrap(ctx: commands.context.Context, url: str) -> None:
     if response.status_code != 200:
         print(f"[{current_time}] Erreur lors du téléchargement de la page.")
         embed = discord.Embed(title="Erreur lors du téléchargement de la page.", color=0xc20000)
-        await ctx.author.send(embed=embed)
+        await ctx.channel.send(embed=embed)
         return
 
     html_content = response.text
@@ -96,7 +99,7 @@ async def scrap(ctx: commands.context.Context, url: str) -> None:
     embed = discord.Embed(title=f"Logement.s trouvé.s ({len(names)}):",
                           description="-" + "\n-".join(names),
                           color=0x0f8000)
-    await ctx.author.send(embed=embed)
+    await ctx.channel.send(embed=embed)
 
 
 bot.run(BOT_TOKEN)
