@@ -21,6 +21,12 @@ started_tasks = {}
 
 TASKS_FILE = "tasks.json"
 
+def create_loop(ctx, url):
+    @tasks.loop(minutes=1)
+    async def loop_inner():
+        await scrap(ctx, url)
+    return loop_inner
+
 # ---------- Chargement et sauvegarde ----------
 
 def load_tasks():
@@ -90,11 +96,8 @@ async def start(ctx: commands.context.Context, arg: str = None) -> None:
         await ctx.channel.send(embed=discord.Embed(title="Aucune URL entrée.", color=0xc20000))
         return
 
-    @tasks.loop(minutes=1)
-    async def loop(ctx, url):
-        await scrap(ctx, url)
-
-    loop.start(ctx, arg)
+    loop = create_loop(ctx, arg)
+    loop.start()
     started_tasks[ctx.author.id] = loop
     prev_results[ctx.author.id] = set()
 
@@ -138,12 +141,8 @@ async def on_ready():
     for uid_str, url in tasks_data.items():
         uid = int(uid_str)
         user = await bot.fetch_user(uid)
-
-        @tasks.loop(minutes=1)
-        async def loop(ctx, url):
-            await scrap(ctx, url)
-
-        loop.start(user, url)
+        loop = create_loop(user, url)
+        loop.start()
         started_tasks[uid] = loop
         prev_results[uid] = set()
 
