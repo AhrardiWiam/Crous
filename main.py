@@ -37,7 +37,14 @@ def save_tasks(tasks_data):
 
 async def scrap(ctx: commands.context.Context, url: str) -> None:
     current_time = datetime.now().strftime("%H:%M")
-    response = requests.get(url)
+    try:
+        response = requests.get(url, timeout=5)
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        print(f"[{datetime.now().strftime('%H:%M')}] Erreur de requête : {e}")
+        embed = discord.Embed(title="Erreur lors du téléchargement.", description=str(e), color=0xc20000)
+        await ctx.author.send(embed=embed)
+        return
 
     if response.status_code != 200:
         print(f"[{current_time}] Erreur de téléchargement.")
